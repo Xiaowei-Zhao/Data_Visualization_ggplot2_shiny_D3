@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Hmk5 Q5</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<style>
+            .button {
+                fill: lightgray;
+                stroke: lightgray;
+                stroke-width: 4;
+            }
+        </style>
+
+	</head>
+	<body>
+
+	<div style="width: 600px">
+	
+	  <h3>Correlation Coefficient</h3>
+	  
+	  <p>The correlation coefficient (r) is a measure of the linear relationship
+	  between two variables x and y. To get a sense of the connection between the
+	  appearance of points -- (x,y) pairs --  in a scatterplot and the value of r,
+	  click anywhere on the graph to add points. To remove points, click the Remove 
+	  Points button and then mouseover points. The correlation coefficient is shown below.</p>
+	  
+	  </div>
+	
+<!-- 	   Radio buttons (NEW) -->
+		
+		<h3 id="cc">Two points are needed to calculate r.</h3>
+	  
+		<script type="text/javascript">
+
+			//  Width and height of svg
+			var w = 600;
+			var h = 400;
+			var padding = 30;
+			
+			// axis min / max
+		  var xmin = -50;
+		  var xmax = 50;
+		  var ymin = -30;
+		  var ymax = 30;
+		
+			//		Scale functions
+            var x_scale = d3.scaleLinear().domain([xmin, xmax]).range([padding, w-padding])
+            var y_scale = d3.scaleLinear().domain([ymax, ymin]).range([padding, h-padding])
+
+
+			//    Define X axis and Y axis
+            var x_axis = d3.axisBottom(x_scale).tickValues([-40, -20, 0, 20, 40]);
+            var y_axis = d3.axisLeft(y_scale).tickValues([-30, -20, -10, 0 ,10, 20, 30]);
+
+
+			//    Create SVG element
+            d3.select("body").append("svg").attr("width", w).attr("height", h);
+            d3.select("svg").append("rect").attr("x", "0").attr("y", "0").attr("width", w).attr("height", h).attr("fill", "white");
+            d3.select("svg").append("circle").attr("cx", "10").attr("cy", "10")
+            .attr("id", "add").attr("class", "button").attr("r", 5);
+            d3.select("svg").append("text").attr("x", "20").attr("y", "15").text("Add points");
+
+            d3.select("svg").append("circle").attr("cx", "130").attr("cy", "10")
+            .attr("id", "remove").attr("class", "button").attr("r", 5);
+            d3.select("svg").append("text").attr("x", "140").attr("y", "15").text("Remove points");
+			    				
+			
+			//    Create axes
+            d3.select("svg").append("g").attr("transform", "translate(" + [0, 200] + ")").call(x_axis);
+            d3.select("svg").append("g").attr("transform", "translate(" + [300, 0] + ")").call(y_axis);
+
+					
+			//    Create blank text element
+			d3.select("svg").append("text");
+
+			
+			//    Update stats function
+			function numerator(x,y) {
+                var temp = 0
+                for (var i = 0; i < x.length; i++) {
+                    temp = temp + (x[i] - d3.mean(x)) * (y[i] - d3.mean(y))
+                }
+                return temp
+            }
+
+
+            function denominator(x,y) {
+                var tempx = 0
+                for (var i = 0; i < x.length; i++) {
+                    tempx = tempx + (x[i] - d3.mean(x)) * (x[i] - d3.mean(x))
+                }
+
+                var tempy = 0
+                for (var i = 0; i < y.length; i++) {
+                    tempy = tempy + (y[i] - d3.mean(y)) * (y[i] - d3.mean(y))
+                }
+
+                return Math.sqrt(tempx) * Math.sqrt(tempy)
+            }
+		
+				
+			//    Update stats function
+			var data = []
+			function update(){
+                var temp_select = d3.select("#circles").selectAll("circle").data(data)
+                .attr("class", "dot")
+                .attr("cx", function(d) {
+                    return d.x;
+                })
+                .attr("cy", function(d) {
+                    return d.y;
+                })
+                .attr("r", "4").attr("fill", "red");
+
+                temp_select.enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", function(d) {
+                    return d.x;
+                })
+                .attr("cy", function(d) {
+                    return d.y;
+                })
+                .attr("r", "4").attr("fill", "red")
+                .on("mouseover", function(d,i){
+                    if (remove.style("fill") == "gray"){
+                        let p = d3.select(this);
+                        data.splice(i,1);
+                        update();
+                    }
+                });
+
+                temp_select.exit().remove();
+
+                // calculate r
+                var x_data=[]
+				var y_data=[]
+				var len = data.length;
+                d3.select("svg").selectAll("text.newcoord").remove();
+           		var h = d3.format(".2f");
+           		for (var i = 0; i < len; i++) {
+                    x_data.push(h(x_scale(data[i].x)))
+                    y_data.push(h(y_scale(data[i].y)))
+                }
+           		var corr = numerator(x_data,y_data) / denominator(x_data,y_data);
+                if (denominator(x_data,y_data) != 0) {
+                    d3.select("svg").append("text").text("r: " + h(corr)).attr("x", 0).attr("y", 60).attr("class","newcoord").style("font-size", "20px");
+                }
+
+
+            }
+			
+			//    Radio button behavior
+			var add = d3.select("#add").style("fill", "gray");
+            var remove = d3.select("#remove").style("fill", "lightgray");
+            add.on("click", function(){
+                add.style("fill", "gray");
+                remove.style("fill", "lightgray");
+            })
+            remove.on("click", function(){
+                add.style("fill", "lightgray");
+                remove.style("fill", "gray");
+            })
+
+			
+			//    Click behavior
+			var circles = d3.select("svg").append("g").attr("id", "circles");
+
+            d3.select("svg").select("rect").on("click", function() {
+                console.log("add sucess");
+                if (add.style("fill") == "gray"){
+                    area = d3.select(this).node();
+                    var coords = d3.mouse(area);
+                    data.push({x:coords[0], y:coords[1]});
+                    data.sort(function(a,b) { return a.x - b.x});
+                    update();
+                }
+            })	
+				
+	
+
+		</script>
+	</body>
+</html>

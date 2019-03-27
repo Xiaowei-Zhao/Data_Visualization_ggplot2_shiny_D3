@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Hmk5 Q1</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+
+	</head>
+	<body>
+	
+	  <h3>Click anywhere to add a point.</h3>
+	  	  
+		<script type="text/javascript">
+
+			// Width and height of svg
+			var w = 600;
+			var h = 400;
+
+			d3.select("body").append("svg").attr("width", w).attr("height", h);
+            d3.select("svg").append("rect").attr("x", "0").attr("y", "0").attr("width", w).attr("height", h).attr("fill", "#e6ffff");
+            d3.select("svg").on("click", function() {
+                var clicks = d3.mouse(this);
+                d3.select("svg").append("circle").attr("cx", clicks[0]).attr("cy", clicks[1]).attr("r", 6).attr("fill", "red");
+            })
+
+		</script>
+	</body>
+</html>

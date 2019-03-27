@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Hmk5 Q4</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+
+	</head>
+	<body>
+
+    <div style="width: 600px">
+	
+	  <h3>Correlation Coefficient</h3>
+	  
+	  <p>The correlation coefficient (r) is a measure of the linear relationship
+	  between two variables x and y. To get a sense of the connection between the
+	  appearance of points -- (x,y) pairs --  in a scatterplot and the value of r,
+	  click anywhere on the graph to add points. The correlation coefficient is shown below.</p>
+	  
+	  </div>
+		
+		<h3 id="cc">Two points are needed to calculate r.</h3>
+	  
+		<script type="text/javascript">
+
+			//Width and height of svg
+			var w = 600;
+			var h = 400;
+			var padding = 30;
+			
+			// axis min / max
+			
+		  var xmin = -50;
+		  var xmax = 50;
+		  var ymin = -30;
+		  var ymax = 30;
+		
+					
+			//		Scale functions
+            var x_scale = d3.scaleLinear().domain([xmin, xmax]).range([padding, w-padding])
+            var y_scale = d3.scaleLinear().domain([ymax, ymin]).range([padding, h-padding])
+
+
+			//    Define X axis and Y axis
+            var x_axis = d3.axisBottom(x_scale).tickValues([-40, -20, 0, 20, 40]);
+            var y_axis = d3.axisLeft(y_scale).tickValues([-30, -20, -10, 0 ,10, 20, 30]);
+
+
+			//    Create SVG element
+            d3.select("body").append("svg").attr("width", w).attr("height", h);
+            d3.select("svg").append("rect").attr("x", "0").attr("y", "0").attr("width", w).attr("height", h).attr("fill", "white");
+			    				
+			
+			//    Create axes
+            d3.select("svg").append("g").attr("transform", "translate(" + [0, 200] + ")").call(x_axis);
+            d3.select("svg").append("g").attr("transform", "translate(" + [300, 0] + ")").call(y_axis);
+
+					
+			//    Create blank text element
+			d3.select("svg").append("text");
+				
+			//    Click behavior
+			function numerator(x,y) {
+                var temp = 0
+                for (var i = 0; i < x.length; i++) {
+                    temp = temp + (x[i] - d3.mean(x)) * (y[i] - d3.mean(y))
+                }
+                return temp
+            }
+
+
+            function denominator(x,y) {
+                var tempx = 0
+                for (var i = 0; i < x.length; i++) {
+                    tempx = tempx + (x[i] - d3.mean(x)) * (x[i] - d3.mean(x))
+                }
+
+                var tempy = 0
+                for (var i = 0; i < y.length; i++) {
+                    tempy = tempy + (y[i] - d3.mean(y)) * (y[i] - d3.mean(y))
+                }
+
+                return Math.sqrt(tempx) * Math.sqrt(tempy)
+            }
+
+
+			var x_data=[]
+			var y_data=[]
+			d3.select("svg").on("click", function() {
+            	d3.select("svg").selectAll("text.newcoord").remove();
+            	var clicks = d3.mouse(this);
+            	d3.select("svg").append("circle").attr("cx", clicks[0]).attr("cy", clicks[1]).attr("r", 6).attr("fill", "red");
+           		var f = d3.format(".2f");
+           		x_data.push(x_scale.invert(clicks[0]));
+           		y_data.push(y_scale.invert(clicks[1]));
+           		var corr = numerator(x_data,y_data) / denominator(x_data,y_data);
+                if (denominator(x_data,y_data) != 0) {
+                    d3.select("svg").append("text").text("r: " + f(corr)).attr("x", 0).attr("y", 20).attr("class","newcoord").style("font-size", "20px");
+                }
+            })
+	
+
+		</script>
+	</body>
+</html>
